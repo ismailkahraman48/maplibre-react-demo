@@ -7,7 +7,7 @@ export const MapProvider = ({children}) => {
     const [markers, setMarkers] = useState([]);
 
     const addMarker = (marker) => {
-        setMarkers([...markers, marker]);
+        setMarkers((prevMarkers) => [...prevMarkers, marker]);
       };
       const data = {
         markers,setMarkers,
