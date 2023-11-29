@@ -1,78 +1,131 @@
+// Map.js
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./Map.css";
-
 import { useEffect, useRef, useState } from "react";
 import { useMap } from "../../contexts/mapContext";
 import maplibregl from "maplibre-gl";
+import AddMarkerButton from "./AddMarkerButton";
+import PopupForm from "./PopupForm";
+import CustomPopupContent from "./CustomPopupContent";
+import ReactDOMServer from 'react-dom/server';
+
 
 function Map() {
   const mapContainer = useRef(null);
-  const map = useRef(null);
-  const API_KEY = useRef("oDnL5NubQqpifBXFRO1T");
-  const [lng] = useState(28.979530);
-  const [lat] = useState(41.015137);
-  const [zoom] = useState(12);
-  // const [API_KEY] = useState('oDnL5NubQqpifBXFRO1T');
-
-  const { markers, addMarker } = useMap();
-
-  const [isAddingMarker, setIsAddingMarker] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [temporaryMarker, setTemporaryMarker] = useState(null);
+  const { mapRef, markers, addMarker, mapParams, isAddingMarker, setIsAddingMarker,selectedLocation, setSelectedLocation } = useMap();
 
   useEffect(() => {
-    if (map.current) return;
-
-    map.current = new maplibregl.Map({
+    if (mapRef.current) return;
+    console.log("Map initialized !")
+    mapRef.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${API_KEY.current}`,
-      center: [lng, lat],
-      zoom: zoom,
+      style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapParams.API_KEY}`,
+      center: [mapParams.lng, mapParams.lat],
+      zoom: mapParams.zoom,
     });
 
-    map.current.addControl(new maplibregl.NavigationControl(), "top-right");
-  }, [lng, lat]);
+    mapRef.current.addControl(new maplibregl.NavigationControl(), "top-right");
+  }, [mapParams]);
 
   useEffect(() => {
-    const handleClick = (e) => {
+    const handleMapClick = (e) => {
       if (isAddingMarker) {
-        const { lng, lat } = e.lngLat;
-        const markerElement = document.createElement("div");
-        markerElement.className = "custom-marker";
-        const popup = new maplibregl.Popup().setHTML(
-          "<p>Marker Öznitelikleri</p>"
+        setSelectedLocation(e.lngLat);
+        console.log("seçilen konum güncellendi")
+        // Geçici marker'ı ekleyin
+        if (temporaryMarker) {
+          temporaryMarker.remove();
+        }
+
+        const markerElement = document.createElement('div');
+        markerElement.className = 'custom-marker';
+
+        setTemporaryMarker(
+          new maplibregl.Marker(markerElement)
+            .setLngLat(e.lngLat)
+            .addTo(mapRef.current)
         );
 
-        const marker = new maplibregl.Marker(markerElement)
-          .setLngLat({ lng, lat })
-          .setPopup(popup)
-          .addTo(map.current);
-
-        addMarker(marker) // add new marker to context
+        setShowForm(true);
       }
     };
 
     if (isAddingMarker) {
-      map.current.on("click", handleClick);
+      console.log("map click event added!")
+      mapRef.current.on("click", handleMapClick);
     }
-  
-    return () => map.current.off("click", handleClick);
-  }, [isAddingMarker]);
 
-  const handleAddMarkerButtonClick = () => {
+    return () => {
+      console.log("map click event removed!")
+      mapRef.current.off("click", handleMapClick);
+    };
+  }, [isAddingMarker, mapRef, addMarker, setSelectedLocation, temporaryMarker]);
+
+  const handleButtonClick = () => {
     setIsAddingMarker((prev) => !prev);
+    setSelectedLocation(null);
   };
 
-  console.log("ctx markers",markers)
+  const handleFormSubmit = (formData) => {
+    const { title, description, location } = formData;
+    console.log("formdata",formData)
+    // Geçici marker'ı güncelle
+    if (temporaryMarker) {
+      temporaryMarker
+        .setLngLat(location)
+        .setPopup(new maplibregl.Popup().setHTML(`<p>Title: ${title}</p><p>Description: ${description}</p>`))
+        .addTo(mapRef.current);
+
+      // Kalıcı marker'ı ekleyin
+      const markerElement = document.createElement('div');
+      markerElement.className = 'custom-marker';
+
+      const newMarker = new maplibregl.Marker(markerElement)
+        .setLngLat(location)
+        .setPopup(new maplibregl.Popup().setHTML(ReactDOMServer.renderToString(
+          <CustomPopupContent title={title} description={description} location={location} />
+        )))
+        .addTo(mapRef.current);
+
+      addMarker(newMarker);
+    }
+
+    setShowForm(false);
+    setSelectedLocation(null);
+    setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
+
+    // Geçici marker'ı kaldırın
+    if (temporaryMarker) {
+      temporaryMarker.remove();
+      setTemporaryMarker(null);
+    }
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setSelectedLocation(null);
+
+    // Geçici marker'ı kaldırın
+    if (temporaryMarker) {
+      temporaryMarker.remove();
+      setTemporaryMarker(null);
+    }
+
+    setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
+  };
+
   return (
     <div className="map-wrap">
       <div className="map" ref={mapContainer} />
-      <button
-        className="fixed bottom-0 left-5 "
-        onClick={handleAddMarkerButtonClick}
-      >
-        {isAddingMarker
-          ? "Marker ekleme aktif (Haritaya tıkla)"
-          : "Marker Ekle"}
-      </button>
+      {showForm && (
+        <PopupForm
+          onSave={handleFormSubmit}
+          onCancel={handleFormCancel}
+        />
+      )}
+      <AddMarkerButton handleButtonClick={handleButtonClick}/>
     </div>
   );
 }

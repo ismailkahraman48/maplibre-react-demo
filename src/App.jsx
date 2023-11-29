@@ -1,12 +1,16 @@
 import './App.css'
-import Map from './components/Map/Map.jsx'
+import MapContainer from './components/Map/MapContainer'
+import Map from './components/Map/Map'
+import PopupForm from './components/Map/PopupForm'
 
 function App() {
 
 
   return (
     <>
-      <Map/>
+      <MapContainer>
+        <Map/>
+      </MapContainer>
     </>
   )
 }
