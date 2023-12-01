@@ -9,3 +9,8 @@
     width: 100%;
     height: 100%;
   }
+
+  .maplibregl-popup-content{
+    background-color: rgb(117, 122, 122);
+    max-width: 250px;
+  }

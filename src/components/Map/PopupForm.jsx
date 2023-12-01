@@ -33,7 +33,7 @@ function PopupForm({ onSave, onCancel }) {
   };
 
   return (
-    <div className="absolute bottom-10 left-3 bg-slate-500 p-4 rounded-md opacity-90" id="form-container">
+    <div className="absolute bottom-10 left-3 bg-gray-700 p-4 rounded-md" id="form-container">
       <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4">
         <label className="flex flex-col">
           <span className="text-white">Title:</span>
@@ -41,11 +41,11 @@ function PopupForm({ onSave, onCancel }) {
         </label>
         <label className="flex flex-col">
           <span className="text-white">Description:</span>
-          <textarea name="description" value={formData.description} onChange={handleFormInput} className="p-2 border border-white rounded-md resize-none"></textarea>
+          <textarea maxLength={20} name="description" value={formData.description} onChange={handleFormInput} className="p-2 border border-white rounded-md resize-none"></textarea>
         </label>
-        <div className="flex justify-end">
-          <button type="submit" className="bg-green-500 text-white p-2 rounded-md">Save</button>
-          <button type="button" onClick={onCancel} className="ml-2 bg-red-500 text-white p-2 rounded-md">
+        <div className="flex justify-end text-white ">
+          <button type="submit" className="bg-green-600 p-2 rounded-md  hover:bg-green-500">Save</button>
+          <button type="button" onClick={onCancel} className="ml-2 bg-red-600 p-2 hover:bg-red-500 rounded-md">
             Cancel
           </button>
         </div>

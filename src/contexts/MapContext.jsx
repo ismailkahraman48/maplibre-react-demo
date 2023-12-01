@@ -11,9 +11,12 @@ export const MapProvider = ({ children }) => {
     lat : 41.015137,
     lng : 28.979530,
     zoom : 12,
-    API_KEY : import.meta.env.VITE_MAPTILER_API_KEY
   })
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [apiKeys, setApiKeys] = useState({
+    maptiler: import.meta.env.VITE_MAPTILER_API_KEY,
+    // Diğer API anahtarları buraya eklenebilir
+  });
   const addMarker = (marker) => {
     setMarkers((prevMarkers) => [...prevMarkers, marker]);
   };
@@ -29,6 +32,8 @@ export const MapProvider = ({ children }) => {
     addMarker,
     selectedLocation,
     setSelectedLocation,
+    apiKeys,
+    setApiKeys,
   };
 
   return (

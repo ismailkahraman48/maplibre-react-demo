@@ -1,4 +1,3 @@
-// Map.js
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./Map.css";
 import { useEffect, useRef, useState } from "react";
@@ -9,24 +8,25 @@ import PopupForm from "./PopupForm";
 import CustomPopupContent from "./CustomPopupContent";
 import ReactDOMServer from 'react-dom/server';
 
-
 function Map() {
   const mapContainer = useRef(null);
   const [showForm, setShowForm] = useState(false);
   const [temporaryMarker, setTemporaryMarker] = useState(null);
-  const { mapRef, markers, addMarker, mapParams, isAddingMarker, setIsAddingMarker,selectedLocation, setSelectedLocation } = useMap();
-
+  const { mapRef, markers, addMarker, mapParams, isAddingMarker, setIsAddingMarker,selectedLocation, setSelectedLocation, apiKeys } = useMap();
+  
   useEffect(() => {
     if (mapRef.current) return;
     console.log("Map initialized !")
     mapRef.current = new maplibregl.Map({
+      
       container: mapContainer.current,
-      style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapParams.API_KEY}`,
+      style: `https://tiles.basemaps.cartocdn.com/gl/positron-gl-style/style.json`,
       center: [mapParams.lng, mapParams.lat],
       zoom: mapParams.zoom,
     });
 
     mapRef.current.addControl(new maplibregl.NavigationControl(), "top-right");
+
   }, [mapParams]);
 
   useEffect(() => {
@@ -55,15 +55,20 @@ function Map() {
     if (isAddingMarker) {
       console.log("map click event added!")
       mapRef.current.on("click", handleMapClick);
+      mapRef.current.getCanvasContainer().style.cursor = 'crosshair';
+
     }
 
     return () => {
       console.log("map click event removed!")
       mapRef.current.off("click", handleMapClick);
+      mapRef.current.getCanvasContainer().style.cursor = '';
     };
   }, [isAddingMarker, mapRef, addMarker, setSelectedLocation, temporaryMarker]);
 
-  const handleButtonClick = () => {
+  
+
+  const handleAddMarker = () => {
     setIsAddingMarker((prev) => !prev);
     setSelectedLocation(null);
   };
@@ -75,12 +80,12 @@ function Map() {
     if (temporaryMarker) {
       temporaryMarker
         .setLngLat(location)
-        .setPopup(new maplibregl.Popup().setHTML(`<p>Title: ${title}</p><p>Description: ${description}</p>`))
         .addTo(mapRef.current);
 
       // Kalıcı marker'ı ekleyin
       const markerElement = document.createElement('div');
       markerElement.className = 'custom-marker';
+      markerElement.id = "marker"
 
       const newMarker = new maplibregl.Marker(markerElement)
         .setLngLat(location)
@@ -116,6 +121,10 @@ function Map() {
     setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
   };
 
+  useEffect(() => {
+    console.log("ctx markers",markers)
+  },[markers])
+
   return (
     <div className="map-wrap">
       <div className="map" ref={mapContainer} />
@@ -125,7 +134,7 @@ function Map() {
           onCancel={handleFormCancel}
         />
       )}
-      <AddMarkerButton handleButtonClick={handleButtonClick}/>
+      <AddMarkerButton handleAddMarker={handleAddMarker}/>
     </div>
   );
 }
