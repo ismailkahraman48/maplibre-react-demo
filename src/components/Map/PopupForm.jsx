@@ -1,5 +1,6 @@
+/* eslint-disable react/prop-types */
 // PopupForm.js
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useMap } from "../../contexts/mapContext";
 
 function PopupForm({ onSave, onCancel }) {

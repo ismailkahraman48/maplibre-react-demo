@@ -6,41 +6,49 @@ import maplibregl from "maplibre-gl";
 import AddMarkerButton from "./AddMarkerButton";
 import PopupForm from "./PopupForm";
 import CustomPopupContent from "./CustomPopupContent";
-import ReactDOMServer from 'react-dom/server';
+import ReactDOMServer from "react-dom/server";
+import BasemapSwitch from "./BasemapSwitch/BasemapSwitch";
 
 function Map() {
   const mapContainer = useRef(null);
   const [showForm, setShowForm] = useState(false);
   const [temporaryMarker, setTemporaryMarker] = useState(null);
-  const { mapRef, markers, addMarker, mapParams, isAddingMarker, setIsAddingMarker,selectedLocation, setSelectedLocation, apiKeys } = useMap();
-  
+  const {
+    mapRef,
+    addMarker,
+    mapParams,
+    isAddingMarker,
+    setIsAddingMarker,
+    setSelectedLocation,
+  } = useMap();
+
   useEffect(() => {
-    if (mapRef.current) return;
-    console.log("Map initialized !")
+    // harita render işlemi dropdown olduktan sonra olmalı
+    // if (mapRef.current) return;
+    console.log("Map initialized !");
     mapRef.current = new maplibregl.Map({
-      
       container: mapContainer.current,
-      style: `https://tiles.basemaps.cartocdn.com/gl/positron-gl-style/style.json`,
+      style: mapParams.style,
       center: [mapParams.lng, mapParams.lat],
       zoom: mapParams.zoom,
     });
 
     mapRef.current.addControl(new maplibregl.NavigationControl(), "top-right");
-
-  }, [mapParams]);
+   
+  }, [mapParams, mapRef]);
 
   useEffect(() => {
     const handleMapClick = (e) => {
       if (isAddingMarker) {
         setSelectedLocation(e.lngLat);
-        console.log("seçilen konum güncellendi")
+        console.log("seçilen konum güncellendi");
         // Geçici marker'ı ekleyin
         if (temporaryMarker) {
           temporaryMarker.remove();
         }
 
-        const markerElement = document.createElement('div');
-        markerElement.className = 'custom-marker';
+        const markerElement = document.createElement("div");
+        markerElement.className = "custom-marker";
 
         setTemporaryMarker(
           new maplibregl.Marker(markerElement)
@@ -53,20 +61,17 @@ function Map() {
     };
 
     if (isAddingMarker) {
-      console.log("map click event added!")
+      console.log("map click event added!");
       mapRef.current.on("click", handleMapClick);
-      mapRef.current.getCanvasContainer().style.cursor = 'crosshair';
-
+      mapRef.current.getCanvasContainer().style.cursor = "crosshair";
     }
 
     return () => {
-      console.log("map click event removed!")
+      console.log("map click event removed!");
       mapRef.current.off("click", handleMapClick);
-      mapRef.current.getCanvasContainer().style.cursor = '';
+      mapRef.current.getCanvasContainer().style.cursor = "";
     };
   }, [isAddingMarker, mapRef, addMarker, setSelectedLocation, temporaryMarker]);
-
-  
 
   const handleAddMarker = () => {
     setIsAddingMarker((prev) => !prev);
@@ -75,23 +80,29 @@ function Map() {
 
   const handleFormSubmit = (formData) => {
     const { title, description, location } = formData;
-    console.log("formdata",formData)
+    console.log("formdata", formData);
     // Geçici marker'ı güncelle
     if (temporaryMarker) {
-      temporaryMarker
-        .setLngLat(location)
-        .addTo(mapRef.current);
+      temporaryMarker.setLngLat(location).addTo(mapRef.current);
 
       // Kalıcı marker'ı ekleyin
-      const markerElement = document.createElement('div');
-      markerElement.className = 'custom-marker';
-      markerElement.id = "marker"
+      const markerElement = document.createElement("div");
+      markerElement.className = "custom-marker";
+      markerElement.id = "marker";
 
       const newMarker = new maplibregl.Marker(markerElement)
         .setLngLat(location)
-        .setPopup(new maplibregl.Popup().setHTML(ReactDOMServer.renderToString(
-          <CustomPopupContent title={title} description={description} location={location} />
-        )))
+        .setPopup(
+          new maplibregl.Popup().setHTML(
+            ReactDOMServer.renderToString(
+              <CustomPopupContent
+                title={title}
+                description={description}
+                location={location}
+              />
+            )
+          )
+        )
         .addTo(mapRef.current);
 
       addMarker(newMarker);
@@ -121,20 +132,14 @@ function Map() {
     setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
   };
 
-  useEffect(() => {
-    console.log("ctx markers",markers)
-  },[markers])
-
   return (
     <div className="map-wrap">
       <div className="map" ref={mapContainer} />
       {showForm && (
-        <PopupForm
-          onSave={handleFormSubmit}
-          onCancel={handleFormCancel}
-        />
+        <PopupForm onSave={handleFormSubmit} onCancel={handleFormCancel} />
       )}
-      <AddMarkerButton handleAddMarker={handleAddMarker}/>
+      <AddMarkerButton handleAddMarker={handleAddMarker} />
+      <BasemapSwitch/>
     </div>
   );
 }
