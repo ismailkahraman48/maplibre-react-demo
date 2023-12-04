@@ -4,7 +4,7 @@ import DropdownOption from "./DropdownOptions";
 import { useMap } from "../../../contexts/mapContext";
 
 function Dropdown() {
-  const { basemaps, selectedBasemap, setSelectedBasemap, setMapParams  } = useMap();
+  const { basemaps, selectedBasemap, setSelectedBasemap, setMapParams, activeMapParams  } = useMap();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = () => {
@@ -12,9 +12,9 @@ function Dropdown() {
   };
 
   const handleSelect = (value) => {
-    console.log(value)
     setSelectedBasemap(value);
-    setIsOpen(false);
+    console.log(activeMapParams)
+    // setIsOpen(false);
     setMapParams((prevParams) => ({
       ...prevParams,
       style : `https://tiles.stadiamaps.com/styles/${value}.json`
@@ -22,15 +22,15 @@ function Dropdown() {
   };
 
   return (
-    <div className="relative inline-block">
+    <div className="relative">
       <div
-        className="flex items-center p-2 border bg-slate-400 cursor-pointer"
+        className="flex justify-center items-center  bg-slate-400 cursor-pointer"
         onClick={handleToggle}
       >
         <span className="mr-2">
           {basemaps.find((opt) => opt.value === selectedBasemap)?.image && (
             <img
-              className="w-8 h-8"
+              className="w-12 h-12"
               src={basemaps.find((opt) => opt.value === selectedBasemap).image}
               alt=""
             />
@@ -48,13 +48,13 @@ function Dropdown() {
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth="2"
+            strokeWidth="3"
             d="M19 9l-7 7-7-7"
           ></path>
         </svg>
       </div>
       {isOpen && (
-        <div className="absolute z-10 w-40 mt-2 bg-white border rounded-md shadow-lg bottom-10">
+        <div className="absolute flex bg-white border rounded-md shadow-lg bottom-14">
           {basemaps.map((option) => (
             <DropdownOption
               key={option.value}

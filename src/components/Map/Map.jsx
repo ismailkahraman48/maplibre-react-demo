@@ -20,6 +20,7 @@ function Map() {
     isAddingMarker,
     setIsAddingMarker,
     setSelectedLocation,
+    setActiveMapParams
   } = useMap();
 
   useEffect(() => {
@@ -33,8 +34,16 @@ function Map() {
       zoom: mapParams.zoom,
     });
 
-    mapRef.current.addControl(new maplibregl.NavigationControl(), "top-right");
-   
+    // harita useeffect unmount çalıştırıyor !
+    // mapRef.current.on('move',(e) => {
+    //   // console.log("latLong : ",e.target.boxZoom._tr.center)
+    //   // console.log("zoom : " ,e.target.boxZoom._tr.zoom)
+    //   setActiveMapParams({
+    //     lat : e.target.boxZoom._tr.center.lng,
+    //     lng : e.target.boxZoom._tr.center.lat,
+    //     zoom : e.target.boxZoom._tr.zoom
+    //   })
+    // })
   }, [mapParams, mapRef]);
 
   useEffect(() => {
@@ -71,7 +80,7 @@ function Map() {
       mapRef.current.off("click", handleMapClick);
       mapRef.current.getCanvasContainer().style.cursor = "";
     };
-  }, [isAddingMarker, mapRef, addMarker, setSelectedLocation, temporaryMarker]);
+  }, [isAddingMarker, addMarker]);
 
   const handleAddMarker = () => {
     setIsAddingMarker((prev) => !prev);
@@ -131,6 +140,9 @@ function Map() {
 
     setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
   };
+
+
+  
 
   return (
     <div className="map-wrap">

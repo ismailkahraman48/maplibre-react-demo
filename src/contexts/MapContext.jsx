@@ -5,6 +5,7 @@ import { smoothDark, smooth, osmBright, outdoors, satellite, terrain } from "../
 const MapContext = createContext();
 
 export const MapProvider = ({ children }) => {
+
   const [basemaps, setBasemaps] = useState([
     { value: "alidade_smooth_dark", image: smoothDark, label: "Dark" },
     { value: "alidade_smooth", image: smooth, label: "Light" },
@@ -13,15 +14,19 @@ export const MapProvider = ({ children }) => {
     { value: "alidade_satellite", image: satellite, label: "Satellite" },
     { value: "stamen_terrain", image: terrain, label: "Terrain" },
   ]);
+
   const mapRef = useRef(null)
   const [isAddingMarker, setIsAddingMarker] = useState(false);
   const [markers, setMarkers] = useState([]);
-  const [selectedBasemap, setSelectedBasemap] = useState("alidade_smooth_dark");
+  const [selectedBasemap, setSelectedBasemap] = useState("outdoors");
   const [mapParams, setMapParams] = useState({
     lat : 41.015137,
     lng : 28.979530,
     zoom : 12,
     style : `https://tiles.stadiamaps.com/styles/${selectedBasemap}.json`
+  })
+  const [activeMapParams, setActiveMapParams] = useState({
+    
   })
   const [selectedLocation, setSelectedLocation] = useState(null);
   
@@ -44,6 +49,8 @@ export const MapProvider = ({ children }) => {
     addMarker,
     selectedLocation,
     setSelectedLocation,
+    activeMapParams,
+    setActiveMapParams
   };
 
   return (
