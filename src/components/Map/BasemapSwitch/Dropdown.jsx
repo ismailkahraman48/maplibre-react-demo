@@ -4,7 +4,7 @@ import DropdownOption from "./DropdownOptions";
 import { useMap } from "../../../contexts/mapContext";
 
 function Dropdown() {
-  const { basemaps, selectedBasemap, setSelectedBasemap, setMapParams, activeMapParams  } = useMap();
+  const { basemaps, selectedBasemap, setSelectedBasemap, setMapParams, activeMapParams,mapParams  } = useMap();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = () => {
@@ -12,13 +12,20 @@ function Dropdown() {
   };
 
   const handleSelect = (value) => {
-    setSelectedBasemap(value);
-    console.log(activeMapParams)
+    
+    console.log("active map params",activeMapParams)
     // setIsOpen(false);
-    setMapParams((prevParams) => ({
-      ...prevParams,
+    const basemapStyle = mapParams.style.match(/\/styles\/(.*?)\.json/)[1]
+    // aynı basemap için render yapma kontrolü
+   if(!(basemapStyle === value)){
+    setSelectedBasemap(value);
+    setMapParams({
+      lng : activeMapParams.lng,
+      lat : activeMapParams.lat,
+      zoom : activeMapParams.zoom,
       style : `https://tiles.stadiamaps.com/styles/${value}.json`
-    }))
+    })
+   }
   };
 
   return (

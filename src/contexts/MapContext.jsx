@@ -26,7 +26,10 @@ export const MapProvider = ({ children }) => {
     style : `https://tiles.stadiamaps.com/styles/${selectedBasemap}.json`
   })
   const [activeMapParams, setActiveMapParams] = useState({
-    
+    lat : 41.015137,
+    lng : 28.979530,
+    zoom : 12,
+    style : `https://tiles.stadiamaps.com/styles/${selectedBasemap}.json`
   })
   const [selectedLocation, setSelectedLocation] = useState(null);
   
