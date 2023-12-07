@@ -14,7 +14,7 @@ function Dropdown() {
   const handleSelect = (value) => {
     
     console.log("active map params",activeMapParams)
-    // setIsOpen(false);
+    setIsOpen(false);
     const basemapStyle = mapParams.style.match(/\/styles\/(.*?)\.json/)[1]
     // aynı basemap için render yapma kontrolü
    if(!(basemapStyle === value)){

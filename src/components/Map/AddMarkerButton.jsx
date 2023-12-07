@@ -1,13 +1,16 @@
-// AddMarkerButton.js
-import React from "react";
 import { useMap } from "../../contexts/mapContext";
 
 function AddMarkerButton() {
-  const { isAddingMarker, setIsAddingMarker, setSelectedLocation } = useMap();
+  const { isAddingMarker, setIsAddingMarker, setSelectedLocation,setShowForm,setTemporaryMarker,temporaryMarker } = useMap();
   
   const handleButtonClick = () => {
     setIsAddingMarker((prev) => !prev);
     setSelectedLocation(null);
+    setShowForm(false);
+    if (temporaryMarker) {
+      temporaryMarker.remove();
+      setTemporaryMarker(null);
+    }
   };
 
   return (

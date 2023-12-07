@@ -1,30 +1,68 @@
+/* eslint-disable react/prop-types */
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./Map.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useMap } from "../../contexts/mapContext";
 import maplibregl from "maplibre-gl";
 import AddMarkerButton from "./AddMarkerButton";
 import PopupForm from "./PopupForm";
-import CustomPopupContent from "./CustomPopupContent";
-import ReactDOMServer from "react-dom/server";
 import BasemapSwitch from "./BasemapSwitch/BasemapSwitch";
-import useAddMarkerOnMapClick from "../../hooks/useAddMarkerOnMapClick";
+import { useLayers } from "../../contexts/LayerContext";
 
-function Map() {
+
+function Map({children}) {
   const mapContainer = useRef(null);
-  const [showForm, setShowForm] = useState(false);
-  const [temporaryMarker, setTemporaryMarker] = useState(null);
   const {
     mapRef,
     addMarker,
     mapParams,
     isAddingMarker,
-    setIsAddingMarker,
     setSelectedLocation,
     setActiveMapParams,
+    showForm,
+    setShowForm,
+    temporaryMarker,
+    setTemporaryMarker,
   } = useMap();
+  const [layers] = useLayers();
+
+  const handleMapMove = (e) => {
+    const { center, zoom } = e.target.boxZoom._tr;
+    console.log(center);
+    setActiveMapParams({
+      lat: center.lat,
+      lng: center.lng,
+      zoom: zoom,
+    });
+  };
+  const handleMapClick = (e) => {
+    setSelectedLocation(e.lngLat);
+    console.log("seçilen konum güncellendi");
+    // Geçici marker'ı ekleyin
+    if (temporaryMarker) {
+      temporaryMarker.remove();
+    }
+
+    const markerElement = document.createElement("div");
+    markerElement.className = "custom-marker";
+
+    setTemporaryMarker(
+      new maplibregl.Marker(markerElement)
+        .setLngLat(e.lngLat)
+        .addTo(mapRef.current)
+    );
+    setShowForm(true);
+  };
 
   
+
+  const handlePolygonClick = (e) => { // layer componentine taşı
+    console.log(e.features[0]);
+    new maplibregl.Popup()
+      .setLngLat(e.lngLat)
+      .setHTML(e.features[0].properties.ad)
+      .addTo(mapRef.current);
+  };
 
   useEffect(() => {
     // harita render işlemi dropdown olduktan sonra olmalı
@@ -36,136 +74,51 @@ function Map() {
       center: [mapParams.lng, mapParams.lat],
       zoom: mapParams.zoom,
     });
-    const handleMapMove = (e) => {
-      const { center, zoom } = e.target.boxZoom._tr;
-      setActiveMapParams({
-        lat: center.lat,
-        lng: center.lng,
-        zoom: zoom,
-      });
-    };
 
-    mapRef.current.on("move", handleMapMove);
+    mapRef.current.on("moveend", handleMapMove);
+    
+    mapRef.current.on("click", "yapi", handlePolygonClick); //layer a taşı
+
+    mapRef.current.on("mouseenter", "yapi", () => {
+      mapRef.current.getCanvas().style.cursor = "pointer";
+    });
+    mapRef.current.on("mouseleave", "yapi", () => {
+      mapRef.current.getCanvas().style.cursor = "";
+    });
 
     return () => {
-      mapRef.current.off("move", handleMapMove);
+      mapRef.current.off("moveend", handleMapMove);
+      
       mapRef.current.remove();
     };
-  }, [mapParams, mapRef]);
-  
-  useAddMarkerOnMapClick(
-    mapRef,
-    isAddingMarker,
-    addMarker,
-    setTemporaryMarker,
-    setShowForm,
-    setSelectedLocation
-  );
+  }, [mapParams, mapRef, layers]);
 
-  
-  // useEffect(() => {
-  //   const handleMapClick = (e) => {
-  //     if (isAddingMarker) {
-  //       setSelectedLocation(e.lngLat);
-  //       console.log("seçilen konum güncellendi");
-  //       // Geçici marker'ı ekleyin
-  //       if (temporaryMarker) {
-  //         temporaryMarker.remove();
-  //       }
+  useEffect(() => {
+    console.log("map.jsx",mapRef.current)
+  },[mapRef])
 
-  //       const markerElement = document.createElement("div");
-  //       markerElement.className = "custom-marker";
-
-  //       setTemporaryMarker(
-  //         new maplibregl.Marker(markerElement)
-  //           .setLngLat(e.lngLat)
-  //           .addTo(mapRef.current)
-  //       );
-
-  //       setShowForm(true);
-  //     }
-  //   };
-
-  //   if (isAddingMarker) {
-  //     console.log("map click event added!");
-  //     mapRef.current.on("click", handleMapClick);
-  //     mapRef.current.getCanvasContainer().style.cursor = "crosshair";
-  //   }
-
-  //   return () => {
-  //     console.log("map click event removed!");
-  //     mapRef.current.off("click", handleMapClick);
-  //     mapRef.current.getCanvasContainer().style.cursor = "";
-  //   };
-  // }, [isAddingMarker, addMarker]);
-
-  const handleAddMarker = () => {
-    setIsAddingMarker((prev) => !prev);
-    setSelectedLocation(null);
-  };
-
-  const handleFormSubmit = (formData) => {
-    const { title, description, location } = formData;
-    console.log("formdata", formData);
-    // Geçici marker'ı güncelle
-    if (temporaryMarker) {
-      temporaryMarker.setLngLat(location).addTo(mapRef.current);
-
-      // Kalıcı marker'ı ekleyin
-      const markerElement = document.createElement("div");
-      markerElement.className = "custom-marker";
-      markerElement.id = "marker";
-
-      const newMarker = new maplibregl.Marker(markerElement)
-        .setLngLat(location)
-        .setPopup(
-          new maplibregl.Popup().setHTML(
-            ReactDOMServer.renderToString(
-              <CustomPopupContent
-                title={title}
-                description={description}
-                location={location}
-              />
-            )
-          )
-        )
-        .addTo(mapRef.current);
-
-      addMarker(newMarker);
+  useEffect(() => {
+    if (isAddingMarker) {
+      console.log("map click event added!");
+      mapRef.current.on("click", handleMapClick);
+      mapRef.current.getCanvasContainer().style.cursor = "crosshair";
     }
 
-    setShowForm(false);
-    setSelectedLocation(null);
-    setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
-
-    // Geçici marker'ı kaldırın
-    if (temporaryMarker) {
-      temporaryMarker.remove();
-      setTemporaryMarker(null);
-    }
-  };
-
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setSelectedLocation(null);
-
-    // Geçici marker'ı kaldırın
-    if (temporaryMarker) {
-      temporaryMarker.remove();
-      setTemporaryMarker(null);
-    }
-
-    setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
-  };
+    return () => {
+      console.log("map click event removed!");
+      mapRef.current.off("click", handleMapClick);
+      mapRef.current.getCanvasContainer().style.cursor = "";
+    };
+  }, [addMarker]);
 
   return (
     <div className="map-wrap">
       <div className="map" ref={mapContainer} />
-      {showForm && (
-        <PopupForm onSave={handleFormSubmit} onCancel={handleFormCancel} />
-      )}
-      <AddMarkerButton handleAddMarker={handleAddMarker} />
+
+      {showForm && <PopupForm />}
+      <AddMarkerButton />
       <BasemapSwitch />
+      {children}
     </div>
   );
 }

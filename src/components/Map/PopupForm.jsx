@@ -1,24 +1,29 @@
 /* eslint-disable react/prop-types */
-// PopupForm.js
-import { useState, useEffect } from "react";
-import { useMap } from "../../contexts/mapContext";
 
-function PopupForm({ onSave, onCancel }) {
-  const { selectedLocation } = useMap();
+import { useState } from "react";
+import { useMap } from "../../contexts/mapContext";
+import maplibregl from "maplibre-gl";
+import CustomPopupContent from "./CustomPopupContent";
+import ReactDOMServer from "react-dom/server";
+
+function PopupForm() {
+  const {
+    selectedLocation,
+    temporaryMarker,
+    mapRef,
+    addMarker,
+    setShowForm,
+    setSelectedLocation,
+    setIsAddingMarker,
+    setTemporaryMarker,
+  } = useMap();
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
   });
 
-  useEffect(() => {
-    // selectedLocation değiştiğinde formu güncelle
-    if (selectedLocation) {
-      setFormData({
-        title: "",
-        description: "",
-      });
-    }
-  }, [selectedLocation]);
+
 
   const handleFormInput = (e) => {
     const { name, value } = e.target;
@@ -30,7 +35,58 @@ function PopupForm({ onSave, onCancel }) {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    onSave({ ...formData, location: selectedLocation });
+    const { title, description } = formData;
+    console.log("selectedLocation", selectedLocation)
+    console.log("formdata", formData);
+    // Geçici marker'ı güncelle
+    if (temporaryMarker) {
+
+      temporaryMarker.setLngLat(selectedLocation).addTo(mapRef.current);
+
+      // Kalıcı marker'ı ekle
+      const markerElement = document.createElement("div");
+      markerElement.className = "custom-marker";
+      markerElement.id = "marker";
+
+      const newMarker = new maplibregl.Marker(markerElement)
+        .setLngLat(selectedLocation)
+        .setPopup(
+          new maplibregl.Popup().setHTML(
+            ReactDOMServer.renderToString(
+              <CustomPopupContent
+                title={title}
+                description={description}
+                location={selectedLocation}
+              />
+            )
+          )
+        )
+        .addTo(mapRef.current);
+
+      addMarker(newMarker);
+    }
+
+    setShowForm(false);
+    setSelectedLocation(null);
+    setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
+
+    // Geçici marker'ı kaldırın
+    if (temporaryMarker) {
+      temporaryMarker.remove();
+      setTemporaryMarker(null);
+    }
+
+  };
+
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setSelectedLocation(null);
+    if (temporaryMarker) {
+      temporaryMarker.remove();
+      setTemporaryMarker(null);
+    }
+
+    setIsAddingMarker(false); // Yeni bir marker eklemeyi engelle
   };
 
   return (
@@ -46,7 +102,7 @@ function PopupForm({ onSave, onCancel }) {
         </label>
         <div className="flex justify-end text-white ">
           <button type="submit" className="bg-green-600 p-2 rounded-md  hover:bg-green-500">Save</button>
-          <button type="button" onClick={onCancel} className="ml-2 bg-red-600 p-2 hover:bg-red-500 rounded-md">
+          <button type="button" onClick={handleFormCancel} className="ml-2 bg-red-600 p-2 hover:bg-red-500 rounded-md">
             Cancel
           </button>
         </div>

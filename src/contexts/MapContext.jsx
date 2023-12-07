@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-// MapContext.js
+
 import { createContext, useContext, useRef, useState } from "react";
 import { smoothDark, smooth, osmBright, outdoors, satellite, terrain } from "../public/assets/basemaps";
 const MapContext = createContext();
@@ -32,6 +32,8 @@ export const MapProvider = ({ children }) => {
     style : `https://tiles.stadiamaps.com/styles/${selectedBasemap}.json`
   })
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [temporaryMarker, setTemporaryMarker] = useState(null);
   
   const addMarker = (marker) => {
     setMarkers((prevMarkers) => [...prevMarkers, marker]);
@@ -53,7 +55,11 @@ export const MapProvider = ({ children }) => {
     selectedLocation,
     setSelectedLocation,
     activeMapParams,
-    setActiveMapParams
+    setActiveMapParams,
+    showForm,
+    setShowForm,
+    temporaryMarker,
+    setTemporaryMarker
   };
 
   return (
