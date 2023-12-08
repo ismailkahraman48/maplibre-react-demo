@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useMap } from "../../../contexts/mapContext";
 import Poi from "../../../public/data/Poi.json";
-import Yapi from "../../../public/data/Yapi.json";
+// import Yapi from "../../../public/data/Yapi.json";
 import { useLayers } from "../../../contexts/LayerContext";
 
 function Layer() {
