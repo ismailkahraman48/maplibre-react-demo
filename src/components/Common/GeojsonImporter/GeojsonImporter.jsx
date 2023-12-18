@@ -4,38 +4,64 @@ function GeojsonImporter() {
   const { mapRef } = useMap();
 
   const handleFileSelect = (e) => {
-    const file = e.target.files[0]; 
+    const file = e.target.files[0];
     if (!file) {
-      // No file selected
       return;
     }
 
-    // gelen verinin point polygon olma durumuna göre harita üzerine bas
-
-
     const reader = new FileReader();
     reader.onload = function (theFile) {
-      // Parse as (geo)JSON
       const geoJSONcontent = JSON.parse(theFile.target.result);
-      console.log("geoJSONcontent", geoJSONcontent);
-      // Add as source to the map
-      mapRef.current.addSource("uploaded-source", {
-        type: "geojson",
-        data: geoJSONcontent,
-      });
 
-      mapRef.current.addLayer({
-        id: "uploaded-polygons", // her yüklenen geojson id farklı olmalı
-        type: "circle", // type gelen feature type bakılarak yazılmalı
-        source: "uploaded-source",
-        paint: {
-          "circle-radius": 6, // gelen veriye göre point polygon ayırt et ona göre paint ver
-          "circle-color": "#B42222",
-        },
+      geoJSONcontent.features.forEach((feature, index) => {
+        // Generate a unique ID for each feature
+        const layerId = `uploaded-${feature.geometry.type}-${Date.now()}-${index}`;
+        console.log("created layer id :", layerId)
+        // Add as source to the map
+        mapRef.current.addSource(layerId, {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [feature],
+          },
+        });
+
+        // Add layer based on feature geometry type
+        if (feature.geometry.type === "Point" || feature.geometry.type === "MultiPoint") {
+          mapRef.current.addLayer({
+            id: layerId,
+            type: "circle",
+            source: layerId,
+            paint: {
+              "circle-radius": 6,
+              "circle-color": "#B42222",
+            },
+          });
+        } else if (feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString") {
+          mapRef.current.addLayer({
+            id: layerId,
+            type: "line",
+            source: layerId,
+            paint: {
+              "line-color": "#888888",
+              "line-width": 2,
+            },
+          });
+        } else if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+          mapRef.current.addLayer({
+            id: layerId,
+            type: "fill",
+            source: layerId,
+            paint: {
+              "fill-color": "#888888",
+              "fill-outline-color": "red",
+              "fill-opacity": 0.4,
+            },
+          });
+        }
       });
     };
 
-    // Read the GeoJSON as text
     reader.readAsText(file, "UTF-8");
   };
 

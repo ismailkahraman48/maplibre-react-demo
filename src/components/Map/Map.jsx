@@ -34,6 +34,9 @@ function Map({children}) {
       lng: center.lng,
       zoom: zoom,
     });
+
+    console.log(mapRef.current.getStyle().sources)
+
   };
   const handleMapClick = (e) => {
     setSelectedLocation(e.lngLat);
@@ -77,14 +80,14 @@ function Map({children}) {
 
     mapRef.current.on("moveend", handleMapMove);
     
-    mapRef.current.on("click", "yapi", handlePolygonClick); //layer a taşı
+    // mapRef.current.on("click", "yapi", handlePolygonClick); //layer a taşı
 
-    mapRef.current.on("mouseenter", "yapi", () => {
-      mapRef.current.getCanvas().style.cursor = "pointer";
-    });
-    mapRef.current.on("mouseleave", "yapi", () => {
-      mapRef.current.getCanvas().style.cursor = "";
-    });
+    // mapRef.current.on("mouseenter", "yapi", () => {
+    //   mapRef.current.getCanvas().style.cursor = "pointer";
+    // });
+    // mapRef.current.on("mouseleave", "yapi", () => {
+    //   mapRef.current.getCanvas().style.cursor = "";
+    // });
 
     return () => {
       mapRef.current.off("moveend", handleMapMove);
@@ -93,9 +96,9 @@ function Map({children}) {
     };
   }, [mapParams, mapRef, layers]);
 
-  useEffect(() => {
-    console.log("map.jsx",mapRef.current)
-  },[mapRef])
+  // useEffect(() => {
+  //   console.log("map.jsx",mapRef.current)
+  // },[mapRef])
 
   useEffect(() => {
     if (isAddingMarker) {
