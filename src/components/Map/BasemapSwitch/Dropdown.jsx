@@ -1,10 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import DropdownOption from "./DropdownOptions";
 import { useMap } from "../../../contexts/mapContext";
 
 function Dropdown() {
-  const { basemaps, selectedBasemap, setSelectedBasemap, setMapParams, activeMapParams,mapParams  } = useMap();
+  const {
+    basemaps,
+    selectedBasemap,
+    setSelectedBasemap,
+    setMapParams,
+    activeMapParams,
+    mapParams,
+    mapRef,
+  } = useMap();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleToggle = () => {
@@ -12,20 +20,23 @@ function Dropdown() {
   };
 
   const handleSelect = (value) => {
-    
-    console.log("active map params",activeMapParams)
     setIsOpen(false);
-    const basemapStyle = mapParams.style.match(/\/styles\/(.*?)\.json/)[1]
+    const basemapStyle = mapParams.style.match(/\/styles\/(.*?)\.json/)[1];
+
     // aynı basemap için render yapma kontrolü
-   if(!(basemapStyle === value)){
-    setSelectedBasemap(value);
-    setMapParams({
-      lng : activeMapParams.lng,
-      lat : activeMapParams.lat,
-      zoom : activeMapParams.zoom,
-      style : `https://tiles.stadiamaps.com/styles/${value}.json`
-    })
-   }
+    if (!(basemapStyle == value)) {
+      setSelectedBasemap(value);
+      setMapParams({
+        lng: activeMapParams.lng,
+        lat: activeMapParams.lat,
+        zoom: activeMapParams.zoom,
+        style: `https://tiles.stadiamaps.com/styles/${value}.json`,
+      });
+      console.log(mapRef.current, "mapRef");
+      mapRef.current.setStyle(
+        `https://tiles.stadiamaps.com/styles/${value}.json`
+      );
+    }
   };
 
   return (
@@ -68,7 +79,7 @@ function Dropdown() {
               value={option.value}
               image={option.image}
               onSelect={handleSelect}
-              label= {option.label}
+              label={option.label}
             />
           ))}
         </div>

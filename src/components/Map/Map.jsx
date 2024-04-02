@@ -9,8 +9,7 @@ import PopupForm from "./PopupForm";
 import BasemapSwitch from "./BasemapSwitch/BasemapSwitch";
 import { useLayers } from "../../contexts/LayerContext";
 
-
-function Map({children}) {
+function Map({ children }) {
   const mapContainer = useRef(null);
   const {
     mapRef,
@@ -28,15 +27,14 @@ function Map({children}) {
 
   const handleMapMove = (e) => {
     const { center, zoom } = e.target.boxZoom._tr;
-    console.log(center);
+    // console.log(center);
     setActiveMapParams({
       lat: center.lat,
       lng: center.lng,
       zoom: zoom,
     });
 
-    console.log(mapRef.current.getStyle().sources)
-
+    // console.log(mapRef.current.getStyle().sources);
   };
   const handleMapClick = (e) => {
     setSelectedLocation(e.lngLat);
@@ -57,9 +55,8 @@ function Map({children}) {
     setShowForm(true);
   };
 
-  
-
-  const handlePolygonClick = (e) => { // layer componentine taşı
+  const handlePolygonClick = (e) => {
+    // layer componentine taşı
     console.log(e.features[0]);
     new maplibregl.Popup()
       .setLngLat(e.lngLat)
@@ -79,7 +76,7 @@ function Map({children}) {
     });
 
     mapRef.current.on("moveend", handleMapMove);
-    
+
     // mapRef.current.on("click", "yapi", handlePolygonClick); //layer a taşı
 
     // mapRef.current.on("mouseenter", "yapi", () => {
@@ -91,10 +88,10 @@ function Map({children}) {
 
     return () => {
       mapRef.current.off("moveend", handleMapMove);
-      
+
       mapRef.current.remove();
     };
-  }, [mapParams, mapRef, layers]);
+  }, [mapRef]);
 
   // useEffect(() => {
   //   console.log("map.jsx",mapRef.current)
@@ -108,7 +105,7 @@ function Map({children}) {
     }
 
     return () => {
-      console.log("map click event removed!");
+      // console.log("map click event removed!");
       mapRef.current.off("click", handleMapClick);
       mapRef.current.getCanvasContainer().style.cursor = "";
     };
