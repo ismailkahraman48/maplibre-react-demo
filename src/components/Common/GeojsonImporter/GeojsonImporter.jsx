@@ -1,4 +1,4 @@
-import { useMap } from "../../../contexts/mapContext";
+import { useMap } from "contexts";
 
 function GeojsonImporter() {
   const { mapRef } = useMap();
@@ -15,8 +15,10 @@ function GeojsonImporter() {
 
       geoJSONcontent.features.forEach((feature, index) => {
         // Generate a unique ID for each feature
-        const layerId = `uploaded-${feature.geometry.type}-${Date.now()}-${index}`;
-        console.log("created layer id :", layerId)
+        const layerId = `uploaded-layer-${
+          feature.geometry.type
+        }-${Date.now()}-${index}`;
+        console.log("created layer id :", layerId);
         // Add as source to the map
         mapRef.current.addSource(layerId, {
           type: "geojson",
@@ -27,7 +29,10 @@ function GeojsonImporter() {
         });
 
         // Add layer based on feature geometry type
-        if (feature.geometry.type === "Point" || feature.geometry.type === "MultiPoint") {
+        if (
+          feature.geometry.type === "Point" ||
+          feature.geometry.type === "MultiPoint"
+        ) {
           mapRef.current.addLayer({
             id: layerId,
             type: "circle",
@@ -37,7 +42,10 @@ function GeojsonImporter() {
               "circle-color": "#B42222",
             },
           });
-        } else if (feature.geometry.type === "LineString" || feature.geometry.type === "MultiLineString") {
+        } else if (
+          feature.geometry.type === "LineString" ||
+          feature.geometry.type === "MultiLineString"
+        ) {
           mapRef.current.addLayer({
             id: layerId,
             type: "line",
@@ -47,7 +55,10 @@ function GeojsonImporter() {
               "line-width": 2,
             },
           });
-        } else if (feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon") {
+        } else if (
+          feature.geometry.type === "Polygon" ||
+          feature.geometry.type === "MultiPolygon"
+        ) {
           mapRef.current.addLayer({
             id: layerId,
             type: "fill",
@@ -61,8 +72,6 @@ function GeojsonImporter() {
         }
       });
     };
-
-    reader.readAsText(file, "UTF-8");
   };
 
   return (

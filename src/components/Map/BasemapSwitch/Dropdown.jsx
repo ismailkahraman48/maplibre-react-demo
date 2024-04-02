@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import DropdownOption from "./DropdownOptions";
-import { useMap } from "../../../contexts/mapContext";
+import { useMap } from "contexts/mapContext";
 
 function Dropdown() {
   const {
@@ -32,9 +32,20 @@ function Dropdown() {
         zoom: activeMapParams.zoom,
         style: `https://tiles.stadiamaps.com/styles/${value}.json`,
       });
-      console.log(mapRef.current, "mapRef");
+      //! https://maplibre.org/maplibre-gl-js/docs/API/types/TransformStyleFunction/ daha sonra bakılacak.
+      const previousSources = mapRef.current.getStyle().sources;
+      const previousLayers = mapRef.current.getStyle().layers;
+      console.log(previousSources, "previousSources");
+      console.log(previousLayers, "previousLayers");
       mapRef.current.setStyle(
         `https://tiles.stadiamaps.com/styles/${value}.json`
+        // {
+        //   transformStyle: (previousStyle, nextStyle) => ({
+        //     ...nextStyle,
+        //     sources: { ...previousSources, ...nextStyle.sources },
+        //     layers: [...previousLayers],
+        //   }),
+        // }
       );
     }
   };

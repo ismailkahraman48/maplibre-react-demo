@@ -7,7 +7,7 @@ import maplibregl from "maplibre-gl";
 import AddMarkerButton from "./AddMarkerButton";
 import PopupForm from "./PopupForm";
 import BasemapSwitch from "./BasemapSwitch/BasemapSwitch";
-import { useLayers } from "../../contexts/LayerContext";
+// import { useLayers } from "../../contexts/LayerContext";
 
 function Map({ children }) {
   const mapContainer = useRef(null);
@@ -23,7 +23,7 @@ function Map({ children }) {
     temporaryMarker,
     setTemporaryMarker,
   } = useMap();
-  const [layers] = useLayers();
+  // const [layers] = useLayers();
 
   const handleMapMove = (e) => {
     const { center, zoom } = e.target.boxZoom._tr;
